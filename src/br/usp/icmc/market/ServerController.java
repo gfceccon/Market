@@ -45,23 +45,84 @@ public class ServerController
 		private Socket socket;
 		private ObjectInputStream inputStream;
 		private ObjectOutputStream outputStream;
+		private User userLogin;
 
 		public ClientThread(Socket s) throws IOException
 		{
 			socket = s;
-			inputStream = new ObjectInputStream(s.getInputStream());
-			outputStream = new ObjectOutputStream(s.getOutputStream());
+			inputStream = new ObjectInputStream(socket.getInputStream());
+			outputStream = new ObjectOutputStream(socket.getOutputStream());
 
 		}
 		@Override
 		public void run()
 		{
+			boolean quit = false;
 			try
 			{
-				while(true)
+				while(!quit)
 				{
-					Product product = (Product)inputStream.readObject();
-					outputStream.writeBoolean(requestProduct(product));
+					Message message = (Message)inputStream.readObject();
+					switch (message)
+					{
+						case REGISTER_USER:
+						{
+							User user = (User) inputStream.readObject();
+							outputStream.writeBoolean(addUser(user));
+						}
+							break;
+						case LOGIN_USER:
+							User user = (User) inputStream.readObject();
+							userLogin = loginUser(user);
+							if(userLogin == null)
+								outputStream.writeBoolean(false);
+							else
+								outputStream.writeBoolean(true);
+							break;
+						case BUY_PRODUCTS:
+						{
+							boolean hasNext = true;
+							while (hasNext)
+							{
+								Object input = inputStream.readObject();
+								if (input instanceof Product)
+								{
+									Product product = (Product) input;
+									outputStream.writeBoolean(requestProduct(product));
+								}
+								else if (input instanceof Message)
+								{
+									message = (Message) input;
+									if (message == Message.END)
+										hasNext = false;
+								}
+							}
+						}
+							break;
+						case RECEIVE_NOTIFICATION:
+						{
+							boolean hasNext = true;
+							while (hasNext)
+							{
+								Object input = inputStream.readObject();
+								if (input instanceof Product)
+								{
+									Product product = (Product) input;
+									outputStream.writeBoolean(requestProduct(product));
+								}
+								else if (input instanceof Message)
+								{
+									message = (Message) input;
+									if (message == Message.END)
+										hasNext = false;
+								}
+							}
+						}
+							break;
+						case END:
+							quit = true;
+							break;
+					}
 				}
 			}catch (Exception e)
 			{
@@ -95,6 +156,26 @@ public class ServerController
 			return false;
 		}
 		return true;
+	}
+	protected synchronized boolean addUser(User user)
+	{
+		if(users.stream().
+				filter(u -> u.getLogin().compareTo(user.getLogin()) == 0).
+				findAny().
+				isPresent())
+		{
+			return false;
+		}
+		users.add(user);
+		return true;
+	}
+	protected synchronized User loginUser(User user)
+	{
+		User logged = users.stream().
+				filter(u -> u.getLogin().compareTo(user.getLogin()) == 0 && u.comparePassword(user)).
+				findAny().
+				get();
+		return logged;
 	}
 
 	public ObservableList<User> getUsers()

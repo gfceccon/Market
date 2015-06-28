@@ -1,13 +1,16 @@
 package br.usp.icmc.market;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
 
-public class Product implements Comparable<Product>
+public class Product implements Comparable<Product>, Serializable
 {
+	static final long serialVersionUID = 42L;
+
 	private UUID id;
 	private String name;
 	private float price;

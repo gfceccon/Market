@@ -1,7 +1,11 @@
 package br.usp.icmc.market;
 
-public abstract class User
+import java.io.Serializable;
+
+public class User implements Serializable
 {
+	static final long serialVersionUID = 42L;
+
 	//User information
 	private String name;
 	private String address;
@@ -9,6 +13,7 @@ public abstract class User
 	private String email;
 	private String login;
 	private String password;
+	private String salt;
 
 	public User(String name, String address, String phone, String email, String login, String password)
 	{
@@ -75,7 +80,7 @@ public abstract class User
 		return login;
 	}
 
-	public boolean comparePassword(String password)
+	public boolean comparePassword(User user)
 	{
 		return password.compareTo(this.password) == 0;
 	}
