@@ -1,40 +1,23 @@
 package br.usp.icmc.market;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
-public abstract class User implements CSVSerializable
+public abstract class User
 {
 	//User information
-	public String login;
-	public String name;
-	public String contact;
-	public String email;
-	public String address;
-	public String cpf;
+	private String name;
+	private String address;
+	private String phone;
+	private String email;
+	private String login;
+	private String password;
 
-	//Controller information
-	public int maxBookCount;				//
-	public int maxLoanTime;
-	public LocalDate banDate;
-
-
-	/*
-		Getters and Setters (TableView essentials)
-	 */
-	public String getLogin()
+	public User(String name, String address, String phone, String email, String login, String password)
 	{
-		return login;
-	}
-
-	public void setLogin(String login)
-	{
+		this.name = name;
+		this.address = address;
+		this.phone = phone;
+		this.email = email;
 		this.login = login;
-	}
-
-	public String getName()
-	{
-		return name;
+		this.password = password;
 	}
 
 	public void setName(String name)
@@ -42,19 +25,14 @@ public abstract class User implements CSVSerializable
 		this.name = name;
 	}
 
-	public String getContact()
+	public void setAddress(String address)
 	{
-		return contact;
+		this.address = address;
 	}
 
-	public void setContact(String contact)
+	public void setPhone(String phone)
 	{
-		this.contact = contact;
-	}
-
-	public String getEmail()
-	{
-		return email;
+		this.phone = phone;
 	}
 
 	public void setEmail(String email)
@@ -62,107 +40,43 @@ public abstract class User implements CSVSerializable
 		this.email = email;
 	}
 
+	public void setLogin(String login)
+	{
+		this.login = login;
+	}
+
+	public void setPassword(String password)
+	{
+		this.password = password;
+	}
+
+	public String getName()
+	{
+		return name;
+	}
+
 	public String getAddress()
 	{
 		return address;
 	}
 
-	public void setAddress(String address)
+	public String getPhone()
 	{
-		this.address = address;
+		return phone;
 	}
 
-	public String getCpf()
+	public String getEmail()
 	{
-		return cpf;
+		return email;
 	}
 
-	public void setCpf(String cpf)
+	public String getLogin()
 	{
-		this.cpf = cpf;
+		return login;
 	}
 
-	public int getMaxBookCount()
+	public boolean comparePassword(String password)
 	{
-		return maxBookCount;
-	}
-
-	public void setMaxBookCount(int maxBookCount)
-	{
-		this.maxBookCount = maxBookCount;
-	}
-
-	public int getMaxLoanTime()
-	{
-		return maxLoanTime;
-	}
-
-	public void setMaxLoanTime(int maxLoanTime)
-	{
-		this.maxLoanTime = maxLoanTime;
-	}
-
-	public String getBanDate()
-	{
-		if (banDate != null)
-			return banDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-		return "-";
-	}
-
-	public void setBanDate(LocalDate newBanDate)
-	{
-		if (newBanDate != null)
-			this.banDate = newBanDate;
-	}
-
-	//Get children class name without package
-	public String getType()
-	{
-		return this.getClass().getSimpleName();
-	}
-
-	@Override
-	public void parse(String[] args) throws Exception
-	{
-		this.login = args[1];
-		this.name = args[2];
-		this.contact = args[3];
-		this.email = args[4];
-		this.address = args[5];
-		this.cpf = args[6];
-		this.maxBookCount = Integer.parseInt(args[7]);
-		this.maxLoanTime = Integer.parseInt(args[8]);
-
-		if (args[9].equals("-"))
-		{
-			this.setBanDate(null);
-		}
-		else
-		{
-			this.setBanDate(LocalDate.parse(args[9], DateTimeFormatter.ofPattern("dd'/'MM'/'yyyy")));
-		}
-	}
-
-	public String[] toCSV(String[] ret) throws Exception
-	{
-		ret[1] = this.login;
-		ret[2] = this.name;
-		ret[3] = this.contact;
-		ret[4] = this.email;
-		ret[5] = this.address;
-		ret[6] = this.cpf;
-		ret[7] = Integer.toString(this.maxBookCount);
-		ret[8] = Integer.toString(this.maxLoanTime);
-
-		if (this.banDate == null)
-		{
-			ret[9] = "-";
-		}
-		else
-		{
-			ret[9] = banDate.format(DateTimeFormatter.ofPattern("dd'/'MM'/'yyyy"));
-		}
-
-		return ret;
+		return password.compareTo(this.password) == 0;
 	}
 }

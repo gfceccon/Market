@@ -9,7 +9,7 @@ public class Main extends Application
 	@Override
 	public void start(Stage primaryStage) throws Exception
 	{
-		//primaryStage.setScene(new LibraryViewer(new Pane()));
+		primaryStage.setScene(new ServerView(new Pane()));
 		primaryStage.setTitle("Market Manager System");
 		primaryStage.setWidth(800);
 		primaryStage.setMaxHeight(550);
