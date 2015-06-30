@@ -6,7 +6,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
-
 public class Product implements Comparable<Product>, Serializable, CSVSerializable
 {
 	static final long serialVersionUID = 42L;
