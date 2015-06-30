@@ -24,7 +24,7 @@ public class ServerController
 		{
 			try
 			{
-				while (true)
+				while(true)
 				{
 					Socket s = socket.accept();
 					if(s != null)
@@ -32,7 +32,7 @@ public class ServerController
 				}
 			}catch (Exception e)
 			{
-
+                e.printStackTrace();
 			}
 		}
 	}
@@ -145,6 +145,7 @@ public class ServerController
 		socket = new ServerSocket(14786);
 		clients = new ArrayList<>();
 
+        new ServerThread().run();
 	}
 
 	public static ServerController getInstance() throws IOException

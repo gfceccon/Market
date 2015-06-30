@@ -1,6 +1,9 @@
 package br.usp.icmc.market;
 
 import java.io.Serializable;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 public class User implements Serializable, CSVSerializable
 {
@@ -13,15 +16,42 @@ public class User implements Serializable, CSVSerializable
 	private String email;
 	private String login;
 	private String password;
+    private String salt;
 
 	public String getSalt()
 	{
 		return salt;
 	}
 
-    private String salt;
+    public void setSalt(String salt) {
+        this.salt = salt;
 
-	public User(){}
+        String generatedPassword = null;
+        try {
+            // Create MessageDigest instance for MD5
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            //Add password bytes to digest
+            md.update(salt.getBytes());
+            //Get the hash's bytes
+            byte[] bytes = md.digest(this.password.getBytes());
+            //This bytes[] has bytes in decimal format;
+            //Convert it to hexadecimal format
+            StringBuilder sb = new StringBuilder();
+            for(int i=0; i< bytes.length ;i++)
+            {
+                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            //Get complete hashed password in hex format
+            generatedPassword = sb.toString();
+        }
+        catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        this.password = generatedPassword;
+    }
+
+    public User(){}
 
 	public User(String name, String address, String phone, String email, String login, String password)
 	{
@@ -31,6 +61,20 @@ public class User implements Serializable, CSVSerializable
 		this.email = email;
 		this.login = login;
 		this.password = password;
+
+        //Always use a SecureRandom generator
+        SecureRandom sr = null;
+        try {
+            sr = SecureRandom.getInstance("SHA1PRNG");
+            //Create array for salt
+            byte[] saltByte = new byte[16];
+            //Get a random salt
+            sr.nextBytes(saltByte);
+            //return salt
+            this.salt = saltByte.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
 	}
 
 	public void setName(String name)
