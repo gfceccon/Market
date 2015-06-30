@@ -7,7 +7,7 @@ import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
 
-public class Product implements Comparable<Product>, Serializable
+public class Product implements Comparable<Product>, Serializable, CSVSerializable
 {
 	static final long serialVersionUID = 42L;
 
@@ -17,6 +17,8 @@ public class Product implements Comparable<Product>, Serializable
 	private int quantity;
 	private LocalDate expirationDate;
 	private String provider;
+
+	public Product(){}
 
 	public Product(String name, float price, LocalDate expirationDate, String provider)
 	{
@@ -103,5 +105,37 @@ public class Product implements Comparable<Product>, Serializable
 		if(quantity > this.quantity)
 			throw new IllegalArgumentException();
 		this.quantity -= quantity;
+	}
+
+	@Override
+	public int getNumberOfArguments() {
+		return 6;
+	}
+
+	@Override
+	public void parse(String[] args) throws Exception {
+		if (args.length != getNumberOfArguments())
+			throw new IllegalArgumentException("Wrong number of arguments!");
+
+		this.id = UUID.fromString(args[0]);
+		this.name = args[1];
+		this.price = Float.parseFloat(args[2]);
+		this.quantity = Integer.parseInt(args[3]);
+		this.expirationDate = LocalDate.parse(args[4], DateTimeFormatter.ofPattern("dd'/'MM'/'yyyy"));
+		this.provider = args[5];
+	}
+
+	@Override
+	public String[] toCSV() throws Exception {
+		String[] ret = new String[getNumberOfArguments()];
+
+		ret[0] = this.id.toString();
+		ret[1] = this.name;
+		ret[2] = Float.toString(this.price);
+		ret[3] = Integer.toString(this.quantity);
+		ret[4] = this.expirationDate.format(DateTimeFormatter.ofPattern("dd'/'MM'/'yyyy"));
+		ret[5] = this.provider;
+
+		return ret;
 	}
 }

@@ -2,7 +2,7 @@ package br.usp.icmc.market;
 
 import java.io.Serializable;
 
-public class User implements Serializable
+public class User implements Serializable, CSVSerializable
 {
 	static final long serialVersionUID = 42L;
 
@@ -20,6 +20,8 @@ public class User implements Serializable
 	}
 
 	private String salt;
+
+	public User(){}
 
 	public User(String name, String address, String phone, String email, String login, String password)
 	{
@@ -89,5 +91,39 @@ public class User implements Serializable
 	public boolean comparePassword(User user)
 	{
 		return password.compareTo(this.password) == 0;
+	}
+
+	@Override
+	public int getNumberOfArguments() {
+		return 7;
+	}
+
+	@Override
+	public void parse(String[] args) throws Exception {
+		if (args.length != getNumberOfArguments())
+			throw new IllegalArgumentException("Wrong number of arguments!");
+
+		this.name = args[0];
+		this.address = args[1];
+		this.phone = args[2];
+		this.email = args[3];
+		this.login = args[4];
+		this.password = args[5];
+		this.salt = args[6];
+	}
+
+	@Override
+	public String[] toCSV() throws Exception {
+		String[] ret = new String[getNumberOfArguments()];
+
+		ret[0] = this.name;
+		ret[1] = this.address;
+		ret[2] = this.phone;
+		ret[3] = this.email;
+		ret[4] = this.login;
+		ret[5] = this.password;
+		ret[6] = this.salt;
+
+		return ret;
 	}
 }
