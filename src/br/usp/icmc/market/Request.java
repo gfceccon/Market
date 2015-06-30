@@ -1,8 +1,16 @@
 package br.usp.icmc.market;
 
-/**
- * Created by gustavo.ceccon on 22/06/2015.
- */
+import java.util.ArrayList;
+
 public class Request
 {
+	public ArrayList<Product> products;
+	public User user;
+
+	public Request(User user)
+	{
+		products = new ArrayList<>();
+		this.user = user;
+	}
+
 }

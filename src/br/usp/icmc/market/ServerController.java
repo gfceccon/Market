@@ -1,22 +1,21 @@
 package br.usp.icmc.market;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Created by gustavo.ceccon on 19/06/2015.
- */
 public class ServerController
 {
 	private static ServerController instance;
 	private ObservableList<User> users;
 	private ObservableList<Product> products;
+	private ArrayList<Request> requests;
 	private ServerSocket socket;
 	private ArrayList<ClientThread> clients;
 
@@ -108,6 +107,7 @@ public class ServerController
 							break;
 						case RECEIVE_NOTIFICATION:
 						{
+							Request request = new Request(user);
 							boolean hasNext = true;
 							while (hasNext)
 							{
@@ -115,7 +115,7 @@ public class ServerController
 								if (input instanceof Product)
 								{
 									Product product = (Product) input;
-									//TODO
+									request.products.add(product);
 								}
 								else if (input instanceof Message)
 								{
@@ -124,6 +124,7 @@ public class ServerController
 										hasNext = false;
 								}
 							}
+							requests.add(request);
 						}
 							break;
 						case END:
@@ -141,11 +142,13 @@ public class ServerController
 	{
 		users = FXCollections.observableArrayList();
 		products = FXCollections.observableArrayList();
+		requests = new ArrayList<>();
 
 		socket = new ServerSocket(14786);
 		clients = new ArrayList<>();
 
 	}
+
 	public static ServerController getInstance() throws IOException
 	{
 		if(instance == null)
@@ -164,6 +167,12 @@ public class ServerController
 		}
 		return Message.OK;
 	}
+
+	public Product[] getProducts(String provider)
+	{
+		return (Product[])products.stream().filter(filterProduct -> filterProduct.getProvider().compareTo(provider) == 0).toArray();
+	}
+
 	protected synchronized Message addUser(User user)
 	{
 		if(users.stream().
@@ -176,6 +185,7 @@ public class ServerController
 		users.add(user);
 		return Message.USER_CREATED;
 	}
+
 	protected synchronized User getUser(User user)
 	{
 		return users.stream().
@@ -183,6 +193,7 @@ public class ServerController
 				findAny().
 				get();
 	}
+
 	protected synchronized boolean loginUser(User login, User inputUser)
 	{
 		return users.stream().

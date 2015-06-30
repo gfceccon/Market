@@ -11,6 +11,7 @@ public enum Message implements Serializable
 	LOGIN_USER,
 	BUY_PRODUCTS,
 	RECEIVE_NOTIFICATION,
+	NOTIFICATION,
 	OUT_OF_STOCK,
 	OK,
 	END
