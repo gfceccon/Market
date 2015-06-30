@@ -1,8 +1,6 @@
 package br.usp.icmc.market;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -27,6 +25,8 @@ public class ServerView extends Scene {
 
     private TextField userSearch;
     private TextField productSearch;
+
+    private Alert error = new Alert(Alert.AlertType.ERROR);
 
     public ServerView(Pane pane) {
         super(pane);
@@ -81,6 +81,8 @@ public class ServerView extends Scene {
 		/* SETUP FUNCTIONS*/
         addColumns();
         fillTable();
+        setAddProductButton(addProduct);
+        setUpdateProductButton(updateProduct);
 		/* END SETUP FUNCTIONS*/
     }
 
@@ -121,6 +123,115 @@ public class ServerView extends Scene {
     private void addColumns() {
         addUserColumns();
         addProductsColumns();
+    }
+
+    private void setAddProductButton(Button button)
+    {
+        Alert dialog = new Alert(Alert.AlertType.CONFIRMATION);
+        TextField nameField = new TextField();
+        TextField priceField = new TextField();
+        TextField quantityField = new TextField();
+        TextField expirationDateField = new TextField();
+        TextField providerField = new TextField();
+
+        Label nameLabel = new Label("Product Name: ");
+        Label priceLabel = new Label("Price: ");
+        Label quantityLabel = new Label("Quantity: ");
+        Label expirationDateLabel = new Label("Product Expiration Date: ");
+        Label providerLabel = new Label("Provider: ");
+
+        GridPane.setHalignment(nameLabel, HPos.RIGHT);
+        GridPane.setHalignment(priceLabel, HPos.RIGHT);
+        GridPane.setHalignment(quantityLabel, HPos.RIGHT);
+        GridPane.setHalignment(expirationDateLabel, HPos.RIGHT);
+        GridPane.setHalignment(providerLabel, HPos.RIGHT);
+
+        GridPane pane = new GridPane();
+
+        pane.addColumn(0, nameLabel, priceLabel, quantityLabel, expirationDateLabel, providerLabel);
+
+        pane.addColumn(1, nameField, priceField, quantityField, expirationDateField, providerField);
+
+        dialog.setTitle("Add Product");
+        dialog.setHeaderText("Insert product information!");
+        dialog.getDialogPane().setContent(pane);
+
+        button.setOnAction(event -> {
+            Platform.runLater(() -> nameField.requestFocus());
+            Optional<ButtonType> returnValue = dialog.showAndWait();
+            if (returnValue.isPresent() && returnValue.get().equals(ButtonType.OK))
+            {
+                try
+                {
+                    controller.addProduct(nameField.getText(), priceField.getText(), quantityField.getText(), expirationDateField.getText(), providerField.getText());
+                } catch (Exception e)
+                {
+                    e.printStackTrace();
+                    error.setTitle("Error adding product");
+                    error.setHeaderText(e.getMessage());
+                    error.show();
+                }
+            }
+
+            nameField.clear();
+            priceField.clear();
+            quantityField.clear();
+            expirationDateField.clear();
+            providerField.clear();
+        });
+    }
+
+    private void setUpdateProductButton(Button button)
+    {
+        Alert dialog = new Alert(Alert.AlertType.CONFIRMATION);
+        TextField priceField = new TextField();
+        TextField quantityField = new TextField();
+
+        Label priceLabel = new Label("Price: ");
+        Label quantityLabel = new Label("Quantity: ");
+
+        GridPane.setHalignment(priceLabel, HPos.RIGHT);
+        GridPane.setHalignment(quantityLabel, HPos.RIGHT);
+
+        GridPane pane = new GridPane();
+
+        pane.addColumn(0, priceLabel, quantityLabel);
+
+        pane.addColumn(1, priceField, quantityField);
+
+        dialog.setHeaderText("Update product information!");
+        dialog.getDialogPane().setContent(pane);
+
+        button.setOnAction(event -> {
+            if(products.selectionModelProperty().get().getSelectedItem() != null) {
+                Platform.runLater(() -> priceField.requestFocus());
+                Optional<ButtonType> returnValue = dialog.showAndWait();
+                if (returnValue.isPresent() && returnValue.get().equals(ButtonType.OK) && products.selectionModelProperty().get().getSelectedItem() != null) {
+                    dialog.setTitle("Update " + products.selectionModelProperty().get().getSelectedItem().getName());
+                    try {
+                        products.selectionModelProperty().get().getSelectedItem().setPrice(Float.parseFloat(priceField.getText()));
+                        products.selectionModelProperty().get().getSelectedItem().setQuantity(Integer.parseInt(quantityField.getText()));
+                    } catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        error.setTitle("Error adding product");
+                        error.setHeaderText(e.getMessage());
+                        error.show();
+                    }
+                    products.getColumns().get(0).setVisible(false);
+                    products.getColumns().get(0).setVisible(true);
+                }
+
+                priceField.clear();
+                quantityField.clear();
+            }
+            else
+            {
+                error.setTitle("Error updating product");
+                error.setHeaderText("You must select a product");
+                error.show();
+            }
+        });
     }
 
     /*

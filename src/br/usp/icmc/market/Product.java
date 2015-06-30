@@ -19,13 +19,14 @@ public class Product implements Comparable<Product>, Serializable, CSVSerializab
 
 	public Product(){}
 
-	public Product(String name, float price, LocalDate expirationDate, String provider)
+	public Product(String name, float price, int quantity, LocalDate expirationDate, String provider)
 	{
 		id = UUID.randomUUID();
 		this.name = name;
 		this.price = price;
 		this.expirationDate = expirationDate;
 		this.provider = provider;
+		this.quantity = quantity;
 	}
 
 	public String getName()
