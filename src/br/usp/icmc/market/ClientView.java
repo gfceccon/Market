@@ -13,23 +13,14 @@ import javafx.scene.layout.VBox;
 
 public class ClientView extends Scene {
     private ClientController controller;
-
     private TableView<Product> products;
-
     private TextField productSearch;
 
-    public ClientView(Pane pane) {
+    public ClientView(Pane pane, String IP) {
         super(pane);
-        controller = ClientController.getInstance();
+        controller = ClientController.getInstance(IP);
 
         products = new TableView<>();
-
-		/* DATE PICKER BLOCK */
-        Alert datePickerModal = new Alert(Alert.AlertType.CONFIRMATION);
-        DatePicker datePicker = new DatePicker();
-        datePickerModal.setTitle("Choose a Date");
-        datePickerModal.setHeaderText("Choose a date!");
-        datePickerModal.getDialogPane().setContent(datePicker);
 
 		/* TABS BLOCK */
         productSearch = new TextField();
@@ -51,7 +42,6 @@ public class ClientView extends Scene {
         verticalPane.setPrefHeight(600);
         pane.getChildren().add(verticalPane);
         /* END TABS BLOCK */
-
 
 		/* SETUP FUNCTIONS*/
         addProductsColumns();

@@ -23,7 +23,6 @@ public class ServerController {
 
         socket = new ServerSocket(14786);
         clients = new ArrayList<>();
-
     }
 
     public static ServerController getInstance() throws IOException {
@@ -34,7 +33,11 @@ public class ServerController {
 
     protected synchronized boolean requestProduct(Product request) {
         try {
-            products.stream().filter(filterProduct -> filterProduct.compareTo(request) == 0).findAny().ifPresent(product -> product.get(request.getQuantity()));
+            products
+                    .stream()
+                    .filter(filterProduct -> filterProduct.compareTo(request) == 0)
+                    .findAny()
+                    .ifPresent(product -> product.get(request.getQuantity()));
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -111,14 +114,15 @@ public class ServerController {
                         }
                         break;
 
-                        case LOGIN_USER:
+                        case LOGIN_USER: {
                             User user = (User) inputStream.readObject();
                             userLogin = loginUser(user);
                             if (userLogin == null)
                                 outputStream.writeBoolean(false);
                             else
                                 outputStream.writeBoolean(true);
-                            break;
+                        }
+                        break;
 
                         case BUY_PRODUCTS: {
                             boolean hasNext = true;
@@ -135,6 +139,7 @@ public class ServerController {
                             }
                         }
                         break;
+
                         case RECEIVE_NOTIFICATION: {
                             boolean hasNext = true;
                             while (hasNext) {
@@ -150,9 +155,10 @@ public class ServerController {
                             }
                         }
                         break;
+
                         case END:
                             quit = true;
-                            break;
+                        break;
                     }
                 }
             } catch (Exception e) {
