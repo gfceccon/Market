@@ -15,9 +15,11 @@ public class ClientController {
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
 
-    private ClientController(String IP) {
+    private ClientController() {
         products = FXCollections.observableArrayList();
+    }
 
+    public void connect(String IP){
         try {
             socket = new Socket(IP, 14786);
             inputStream = new ObjectInputStream(socket.getInputStream());
@@ -27,9 +29,9 @@ public class ClientController {
         }
     }
 
-    public static ClientController getInstance(String IP) {
+    public static ClientController getInstance() {
         if (instance == null)
-            instance = new ClientController(IP);
+            instance = new ClientController();
         return instance;
     }
 
@@ -55,5 +57,39 @@ public class ClientController {
 
     public void buyProduct(){
         //TODO
+    }
+
+    public boolean login(String username, String password){
+        User user = new User();
+
+        user.setLogin(username);
+        user.setPassword(password);
+
+        try {
+            outputStream.writeObject(Message.LOGIN_USER);
+            outputStream.writeObject(user);
+
+            String salt = (String) inputStream.readObject();
+            if(salt.isEmpty()) {
+                //TODO
+            }else{
+                user.setSalt(salt);
+                outputStream.writeObject(user);
+                switch((Message) inputStream.readObject()){
+                    case INCORRECT_PASSWORD:
+                        return false;
+
+                    case OK:
+                        return true;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }

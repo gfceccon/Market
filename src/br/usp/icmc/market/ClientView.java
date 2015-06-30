@@ -16,9 +16,9 @@ public class ClientView extends Scene {
     private TableView<Product> products;
     private TextField productSearch;
 
-    public ClientView(Pane pane, String IP) {
+    public ClientView(Pane pane) {
         super(pane);
-        controller = ClientController.getInstance(IP);
+        controller = ClientController.getInstance();
 
         products = new TableView<>();
 
