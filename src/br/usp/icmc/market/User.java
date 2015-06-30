@@ -13,13 +13,12 @@ public class User implements Serializable, CSVSerializable
 	private String email;
 	private String login;
 	private String password;
+	private String salt;
 
 	public String getSalt()
 	{
 		return salt;
 	}
-
-	private String salt;
 
 	public User(){}
 
