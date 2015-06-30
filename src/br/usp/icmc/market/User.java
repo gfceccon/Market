@@ -19,7 +19,7 @@ public class User implements Serializable, CSVSerializable
 		return salt;
 	}
 
-	private String salt;
+    private String salt;
 
 	public User(){}
 
