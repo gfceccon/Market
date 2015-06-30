@@ -1,15 +1,23 @@
 package br.usp.icmc.market;
 
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+
+import java.util.Optional;
 
 public class ServerView extends Scene {
     private ServerController controller;
@@ -76,6 +84,40 @@ public class ServerView extends Scene {
 		/* END SETUP FUNCTIONS*/
     }
 
+	private void setAskProvider(Button button)
+	{
+		Alert dialog = new Alert(Alert.AlertType.CONFIRMATION);
+		ComboBox<String> providerComboBox = new ComboBox<>(FXCollections.observableArrayList(controller.getProviders()));
+		providerComboBox.setValue("Provider");
+		ObservableList<Product> obsProducts = FXCollections.observableArrayList();
+
+
+		Pane pane = new Pane();
+
+		dialog.setTitle("Add User");
+		dialog.setHeaderText("Insert user information!");
+		dialog.getDialogPane().setContent(pane);
+		TableView<Product> providerProducts = new TableView<>();
+		TableColumn<Product, String> name = new TableColumn<>("Name");
+		name.setCellValueFactory(new PropertyValueFactory<>("name"));
+		TableColumn<Product, String> expirationDate = new TableColumn<>("Expiration Date");
+		expirationDate.setCellValueFactory(new PropertyValueFactory<>("expirationString"));
+		TableColumn<Product, Integer> quantity = new TableColumn<>("Quantity");
+		quantity.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+		quantity.setEditable(true);
+
+		providerProducts.getColumns().addAll(name, expirationDate, quantity);
+		providerProducts.selectionModelProperty().get().setSelectionMode(SelectionMode.MULTIPLE);
+		pane.getChildren().addAll(providerComboBox, providerProducts);
+		providerComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
+			obsProducts.setAll(controller.getProducts(newValue));
+		});
+
+		button.setOnAction(event -> {
+			Optional<ButtonType> result = dialog.showAndWait();
+		});
+	}
+
     private void addColumns() {
         addUserColumns();
         addProductsColumns();
@@ -115,7 +157,7 @@ public class ServerView extends Scene {
         quantity.setCellValueFactory(new PropertyValueFactory<>("quantity"));
 
         products.getColumns().addAll(name, price, quantity, expirationDate, provider);
-        products.selectionModelProperty().get().setSelectionMode(SelectionMode.SINGLE);
+        products.selectionModelProperty().get().setSelectionMode(SelectionMode.MULTIPLE);
     }
 
     /*

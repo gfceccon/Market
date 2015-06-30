@@ -17,6 +17,11 @@ public class ServerController
 	private ServerSocket socket;
 	private ArrayList<ClientThread> clients;
 
+	public String[] getProviders()
+	{
+		return (String[])products.stream().map(Product::getName).distinct().toArray();
+	}
+
 	private class ServerThread extends Thread
 	{
 		@Override
