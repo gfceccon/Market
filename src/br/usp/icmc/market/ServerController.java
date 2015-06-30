@@ -45,7 +45,7 @@ public class ServerController
 		private Socket socket;
 		private ObjectInputStream inputStream;
 		private ObjectOutputStream outputStream;
-		private User userLogin;
+		private User user;
 
 		public ClientThread(Socket s) throws IOException
 		{
@@ -68,16 +68,23 @@ public class ServerController
 						case REGISTER_USER:
 						{
 							User user = (User) inputStream.readObject();
-							outputStream.writeBoolean(addUser(user));
+							outputStream.writeObject(addUser(user));
 						}
 							break;
 						case LOGIN_USER:
-							User user = (User) inputStream.readObject();
-							userLogin = loginUser(user);
-							if(userLogin == null)
-								outputStream.writeBoolean(false);
+							User u = (User) inputStream.readObject();
+							user = getUser(u);
+							if(user == null)
+								outputStream.writeObject("");
 							else
-								outputStream.writeBoolean(true);
+							{
+								outputStream.writeObject(user.getSalt());
+								u = (User)inputStream.readObject();
+								if(loginUser(user, u))
+									outputStream.writeObject(Message.OK);
+								else
+									outputStream.writeObject(Message.INCORRECT_PASSWORD);
+							}
 							break;
 						case BUY_PRODUCTS:
 						{
@@ -88,7 +95,7 @@ public class ServerController
 								if (input instanceof Product)
 								{
 									Product product = (Product) input;
-									outputStream.writeBoolean(requestProduct(product));
+									outputStream.writeObject(requestProduct(product));
 								}
 								else if (input instanceof Message)
 								{
@@ -108,7 +115,7 @@ public class ServerController
 								if (input instanceof Product)
 								{
 									Product product = (Product) input;
-									outputStream.writeBoolean(requestProduct(product));
+									//TODO
 								}
 								else if (input instanceof Message)
 								{
@@ -146,36 +153,42 @@ public class ServerController
 		return instance;
 	}
 
-	protected synchronized boolean requestProduct(Product request)
+	protected synchronized Message requestProduct(Product request)
 	{
 		try
 		{
 			products.stream().filter(filterProduct -> filterProduct.compareTo(request) == 0).findAny().ifPresent(product -> product.get(request.getQuantity()));
 		}catch(IllegalArgumentException e)
 		{
-			return false;
+			return Message.OUT_OF_STOCK;
 		}
-		return true;
+		return Message.OK;
 	}
-	protected synchronized boolean addUser(User user)
+	protected synchronized Message addUser(User user)
 	{
 		if(users.stream().
 				filter(u -> u.getLogin().compareTo(user.getLogin()) == 0).
 				findAny().
 				isPresent())
 		{
-			return false;
+			return Message.USER_ALREADY_EXISTS;
 		}
 		users.add(user);
-		return true;
+		return Message.USER_CREATED;
 	}
-	protected synchronized User loginUser(User user)
+	protected synchronized User getUser(User user)
 	{
-		User logged = users.stream().
-				filter(u -> u.getLogin().compareTo(user.getLogin()) == 0 && u.comparePassword(user)).
+		return users.stream().
+				filter(u -> u.getLogin().compareTo(user.getLogin()) == 0).
 				findAny().
 				get();
-		return logged;
+	}
+	protected synchronized boolean loginUser(User login, User inputUser)
+	{
+		return users.stream().
+				filter(u -> u.getLogin().compareTo(login.getLogin()) == 0 && u.comparePassword(inputUser)).
+				findAny().
+				isPresent();
 	}
 
 	public ObservableList<User> getUsers()

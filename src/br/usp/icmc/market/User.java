@@ -13,6 +13,12 @@ public class User implements Serializable
 	private String email;
 	private String login;
 	private String password;
+
+	public String getSalt()
+	{
+		return salt;
+	}
+
 	private String salt;
 
 	public User(String name, String address, String phone, String email, String login, String password)
