@@ -3,6 +3,7 @@ package br.usp.icmc.market;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import javax.swing.*;
 import java.io.*;
 
 /*

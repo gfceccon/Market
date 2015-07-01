@@ -187,6 +187,14 @@ public class ServerController
 		return (Product[])products.stream().filter(filterProduct -> filterProduct.getProvider().compareTo(provider) == 0).toArray();
 	}
 
+	public void setUsers(ObservableList<User> users) {
+		this.users = users;
+	}
+
+	public void setProducts(ObservableList<Product> products) {
+		this.products = products;
+	}
+
 	protected synchronized Message addUser(User user)
 	{
 		if(users.stream().

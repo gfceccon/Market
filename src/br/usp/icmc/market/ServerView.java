@@ -14,11 +14,16 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Stage;
 
+import java.io.File;
 import java.util.Optional;
 
 public class ServerView extends Scene {
     private ServerController controller;
+    private CSVManager manager;
 
     private TableView<Product> products;
     private TableView<User> users;
@@ -38,6 +43,25 @@ public class ServerView extends Scene {
 
         products = new TableView<>();
         users = new TableView<>();
+
+        manager = new CSVManager();
+
+        /* MENU BLOCK */
+        MenuBar menuBar = new MenuBar();
+        Menu menuFile = new Menu("File");
+        Menu menuImport = new Menu("Import");
+        Menu menuExport = new Menu("Export");
+
+        MenuItem menuImportUsers = new MenuItem("Users...");
+        MenuItem menuImportProducts = new MenuItem("Products...");
+        MenuItem menuExportUsers = new MenuItem("Users...");
+        MenuItem menuExportProducts = new MenuItem("Products...");
+
+        menuFile.getItems().addAll(menuImport, menuExport);
+        menuImport.getItems().addAll(menuImportUsers, menuImportProducts);
+        menuExport.getItems().addAll(menuExportUsers, menuExportProducts);
+        menuBar.getMenus().addAll(menuFile);
+        /* END MENU BLOCK */
 
 		/* DATE PICKER BLOCK */
         Alert datePickerModal = new Alert(Alert.AlertType.CONFIRMATION);
@@ -69,7 +93,7 @@ public class ServerView extends Scene {
         productsTab.setClosable(false);
 
         TabPane tabPane = new TabPane(usersTab, productsTab);
-        VBox verticalPane = new VBox(tabPane);
+        VBox verticalPane = new VBox(menuBar, tabPane);
         verticalPane.setAlignment(Pos.TOP_CENTER);
 
         verticalPane.setPrefWidth(800);
@@ -83,6 +107,11 @@ public class ServerView extends Scene {
         fillTable();
         setAddProductButton(addProduct);
         setUpdateProductButton(updateProduct);
+
+        setImportMenu(menuImportUsers, "Users");
+        setImportMenu(menuImportProducts, "Products");
+        setExportMenu(menuExportUsers, "Users");
+        setExportMenu(menuExportProducts, "Products");
 		/* END SETUP FUNCTIONS*/
     }
 
@@ -123,6 +152,65 @@ public class ServerView extends Scene {
     private void addColumns() {
         addUserColumns();
         addProductsColumns();
+    }
+
+    /*
+		SET IMPORT MENU OF A GIVEN A TYPE
+		Add ActionListener to the MenuItem menu that opens a file chooser
+	 */
+    private void setImportMenu(MenuItem menu, String type)
+    {
+        Stage fileChooserStage = new Stage();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose " + type + " Data File");
+        fileChooser.getExtensionFilters().addAll(new ExtensionFilter("CSV Files", "*.csv"), new ExtensionFilter("All Files", "*.*"));
+
+        menu.setOnAction(event -> {
+            File selectedFile = fileChooser.showOpenDialog(fileChooserStage);
+            if (selectedFile != null)
+            {
+                switch (type)
+                {
+                    case "Users":
+                        controller.setUsers(manager.parseUserFile(selectedFile));
+                        break;
+
+                    case "Products":
+                        controller.setProducts(manager.parseBookFile(selectedFile));
+                        break;
+                }
+                fillTable();
+            }
+        });
+    }
+
+    /*
+        SET EXPORT MENU OF A GIVEN A TYPE
+        Add ActionListener to the MenuItem menu that opens a file chooser
+     */
+    private void setExportMenu(MenuItem menu, String type)
+    {
+        Stage fileChooserStage = new Stage();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose " + type + " Data File");
+        fileChooser.getExtensionFilters().addAll(new ExtensionFilter("CSV Files", "*.csv"), new ExtensionFilter("All Files", "*.*"));
+
+        menu.setOnAction(event -> {
+            File selectedFile = fileChooser.showSaveDialog(fileChooserStage);
+            if (selectedFile != null)
+            {
+                switch (type)
+                {
+                    case "Users":
+                        manager.writeFile(selectedFile, controller.getUsers());
+                        break;
+
+                    case "Products":
+                        manager.writeFile(selectedFile, controller.getProducts());
+                        break;
+                }
+            }
+        });
     }
 
     private void setAddProductButton(Button button)
