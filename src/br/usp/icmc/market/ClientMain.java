@@ -144,7 +144,20 @@ public class ClientMain extends Application {
             Optional<ButtonType> returnValue = dialog.showAndWait();
             if (returnValue.isPresent() && returnValue.get().equals(ButtonType.OK)) {
                 try {
-                    controller.addUser(nameField.getText(), addressField.getText(), phoneField.getText(), emailField.getText(), loginField.getText(), passwordField.getText());
+                    Message response = controller.addUser(nameField.getText(), addressField.getText(), phoneField.getText(), emailField.getText(), loginField.getText(), passwordField.getText());
+                    if(response == null)
+                    {
+                        //TODO
+                    }
+                    else switch (response)
+                    {
+                        case USER_ALREADY_EXISTS:
+                            //TODO
+                            break;
+                        case USER_CREATED:
+                            //TODO
+                            break;
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     /*error.setTitle("Error adding user");

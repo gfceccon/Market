@@ -22,8 +22,8 @@ public class ClientController {
     public void connect(String IP){
         try {
             socket = new Socket(IP, 14786);
-            inputStream = new ObjectInputStream(socket.getInputStream());
             outputStream = new ObjectOutputStream(socket.getOutputStream());
+            inputStream = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -39,15 +39,17 @@ public class ClientController {
         return products;
     }
 
-    public void addUser(String name, String address, String phone, String email, String login, String password){
+    public Message addUser(String name, String address, String phone, String email, String login, String password){
         User newUser = new User(name, address, phone, email, login, password);
 
         try {
             outputStream.writeObject(Message.REGISTER_USER);
             outputStream.writeObject(newUser);
-        } catch (IOException e) {
+            return (Message)inputStream.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public ObservableList<Product> refreshProducts() {
@@ -69,18 +71,29 @@ public class ClientController {
             outputStream.writeObject(Message.LOGIN_USER);
             outputStream.writeObject(user);
 
-            String salt = (String) inputStream.readObject();
-            if(salt.isEmpty()) {
-                //TODO
-            }else{
-                user.setSalt(salt);
-                outputStream.writeObject(user);
-                switch((Message) inputStream.readObject()){
-                    case INCORRECT_PASSWORD:
-                        return false;
+            Object input =  inputStream.readObject();
+            if(input instanceof Message)
+            {
+            }
+            else
+            {
+                String salt = (String)input;
+                if (salt.isEmpty())
+                {
+                    //TODO
+                }
+                else
+                {
+                    user.setSalt(salt);
+                    outputStream.writeObject(user);
+                    switch ((Message) inputStream.readObject())
+                    {
+                        case INCORRECT_PASSWORD:
+                            return false;
 
-                    case OK:
-                        return true;
+                        case OK:
+                            return true;
+                    }
                 }
             }
 

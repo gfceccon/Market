@@ -33,7 +33,11 @@ public class ServerController
 				{
 					Socket s = socket.accept();
 					if(s != null)
-						clients.add(new ClientThread(s));
+					{
+						ClientThread t = new ClientThread(s);
+						clients.add(t);
+						t.start();
+					}
 				}
 			}catch (Exception e)
 			{
@@ -54,7 +58,6 @@ public class ServerController
 			socket = s;
 			inputStream = new ObjectInputStream(socket.getInputStream());
 			outputStream = new ObjectOutputStream(socket.getOutputStream());
-
 		}
 		@Override
 		public void run()
@@ -150,7 +153,7 @@ public class ServerController
 		socket = new ServerSocket(14786);
 		clients = new ArrayList<>();
 
-        new ServerThread().run();
+        new ServerThread().start();
 	}
 
 	public static ServerController getInstance() throws IOException
