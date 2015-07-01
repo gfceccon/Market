@@ -4,7 +4,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
@@ -212,9 +211,9 @@ public class ServerController
 		return Message.USER_CREATED;
 	}
 
-	public Product addProduct(String name, String price, String quantity, String expirationDate, String provider) throws Exception
+	public Product addProduct(String name, String price, String quantity, LocalDate expirationDate, String provider) throws Exception
 	{
-		Product newProduct = new Product(name, Float.parseFloat(price), Integer.parseInt(quantity), LocalDate.parse(expirationDate, DateTimeFormatter.ofPattern("dd'/'MM'/'yyyy")), provider); // Instantiates a new user
+		Product newProduct = new Product(name, Float.parseFloat(price), Integer.parseInt(quantity), expirationDate, provider); // Instantiates a new user
 		products.add(newProduct); // Adds the user to the list in memory
 
 		return newProduct;
