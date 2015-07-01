@@ -70,30 +70,25 @@ public class ClientController {
         try {
             outputStream.writeObject(Message.LOGIN_USER);
             outputStream.writeObject(user);
+            System.out.println(user);
 
             Object input =  inputStream.readObject();
-            if(input instanceof Message)
+            String salt = (String)input;
+            if (salt.isEmpty())
             {
+                //TODO
             }
             else
             {
-                String salt = (String)input;
-                if (salt.isEmpty())
+                user.setSalt(salt);
+                outputStream.writeObject(user);
+                switch ((Message) inputStream.readObject())
                 {
-                    //TODO
-                }
-                else
-                {
-                    user.setSalt(salt);
-                    outputStream.writeObject(user);
-                    switch ((Message) inputStream.readObject())
-                    {
-                        case INCORRECT_PASSWORD:
-                            return false;
+                    case INCORRECT_PASSWORD:
+                        return false;
 
-                        case OK:
-                            return true;
-                    }
+                    case OK:
+                        return true;
                 }
             }
 

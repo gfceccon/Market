@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class ServerController
 {
@@ -70,28 +71,32 @@ public class ServerController
 				while(!quit)
 				{
 					Message message = (Message)inputStream.readObject();
+					System.out.println(message);
 					switch (message)
 					{
 						case REGISTER_USER:
 						{
-							User user = (User) inputStream.readObject();
-							outputStream.writeObject(addUser(user));
+							User u = (User) inputStream.readObject();
+							outputStream.writeObject(addUser(u));
 						}
 							break;
 						case LOGIN_USER:
+						{
 							User u = (User) inputStream.readObject();
 							user = getUser(u);
-							if(user == null)
+							System.out.println(user);
+							if (user == null)
 								outputStream.writeObject("");
 							else
 							{
 								outputStream.writeObject(user.getSalt());
-								u = (User)inputStream.readObject();
-								if(loginUser(user, u))
+								u = (User) inputStream.readObject();
+								if (loginUser(user, u))
 									outputStream.writeObject(Message.OK);
 								else
 									outputStream.writeObject(Message.INCORRECT_PASSWORD);
 							}
+						}
 							break;
 						case BUY_PRODUCTS:
 						{
@@ -205,10 +210,12 @@ public class ServerController
 
 	protected synchronized User getUser(User user)
 	{
-		return users.stream().
+		Optional<User> result =  users.stream().
 				filter(u -> u.getLogin().compareTo(user.getLogin()) == 0).
-				findAny().
-				get();
+				findAny();
+		if(result.isPresent())
+			return result.get();
+		return null;
 	}
 
 	protected synchronized boolean loginUser(User login, User inputUser)
