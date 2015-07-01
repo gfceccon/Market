@@ -56,8 +56,22 @@ public class ClientController {
         return null;
     }
 
-    public void buyProduct(){
-        //TODO
+    public void buyProducts(ObservableList<Product> products){
+        try{
+            outputStream.writeObject(Message.BUY_PRODUCTS);
+
+            for(Product p : products){
+                outputStream.writeObject(p);
+                Message m = (Message) inputStream.readObject();
+
+                if(m == Message.OK)
+                    products.remove(p);
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean login(String username, String password){
@@ -95,4 +109,5 @@ public class ClientController {
 
         return false;
     }
+
 }
