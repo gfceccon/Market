@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Optional;
 
 public class ServerView extends Scene {
@@ -311,6 +312,9 @@ public class ServerView extends Scene {
                     try {
                         products.selectionModelProperty().get().getSelectedItem().setPrice(Float.parseFloat(priceField.getText()));
                         products.selectionModelProperty().get().getSelectedItem().setQuantity(Integer.parseInt(quantityField.getText()));
+                        ArrayList<Product> newProducts = new ArrayList<>();
+                        newProducts.add(products.selectionModelProperty().get().getSelectedItem());
+                        controller.notifyUser(newProducts);
                     } catch (Exception e)
                     {
                         e.printStackTrace();

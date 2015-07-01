@@ -9,6 +9,16 @@ import java.net.Socket;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Properties;
+
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
 
 public class ServerController
 {
@@ -271,7 +281,89 @@ public class ServerController
 				.stream()
 				.filter(filteredProduct -> filteredProduct.getQuantity() > 0)
 				.forEach(obsProduct -> products.stream().filter(product -> product.compareTo(obsProduct) == 0)
-				.findAny()
-				.ifPresent(p -> p.add(obsProduct.getQuantity())));
+						.findAny()
+						.ifPresent(p -> p.add(obsProduct.getQuantity())));
+	}
+
+	public void notifyUser(ArrayList<Product> newProducts)
+	{
+		Properties props = new Properties();
+		Session session = Session.getDefaultInstance(props, null);
+		ArrayList<String> productsOfInterest;
+
+		// Sender's email ID needs to be mentioned
+		String from = "smurfiru@gmail.com";//change accordingly
+		final String username = "smurfiru@gmail.com";//change accordingly
+		final String password = "tempmarket01";//change accordingly
+
+		// Assuming you are sending email through relay.jangosmtp.net
+		String host = "smtp.gmail.com";
+
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.host", host);
+		props.put("mail.smtp.port", "587");
+
+		for(Request req : requests)
+		{
+			productsOfInterest = new ArrayList<>();
+			for(Product p : req.products)
+			{
+				if(newProducts.contains(p))
+				{
+					productsOfInterest.add(p.getName() + "\n");
+				}
+			}
+
+			if(!productsOfInterest.isEmpty())
+			{
+				String msgBody = "Dear " + req.user.getName() + ",\n\n" +
+						"We are proud to announce that your requested products have finally arrived.\n" +
+						"Here is a list, in case you have forgotten:\n";
+
+				for(String s : productsOfInterest)
+				{
+					msgBody += s;
+				}
+
+				try {
+					// Recipient's email ID needs to be mentioned.
+					String to = req.user.getEmail();
+
+					// Get the Session object.
+					session = Session.getInstance(props,
+							new javax.mail.Authenticator() {
+								protected PasswordAuthentication getPasswordAuthentication() {
+									return new PasswordAuthentication(username, password);
+								}
+							});
+
+					// Create a default MimeMessage object.
+					javax.mail.Message message = new MimeMessage(session);
+
+					// Set From: header field of the header.
+					message.setFrom(new InternetAddress(from));
+
+					// Set To: header field of the header.
+					message.setRecipients(javax.mail.Message.RecipientType.TO,
+							InternetAddress.parse(to));
+
+					// Set Subject: header field
+					message.setSubject("New Products in our Stock!");
+
+					// Now set the actual message
+					message.setText(msgBody);
+
+					// Send message
+					Transport.send(message);
+
+					System.out.println("Sent message successfully....");
+				} catch (AddressException e) {
+					// ...
+				} catch (MessagingException e) {
+					// ...
+				}
+			}
+		}
 	}
 }
