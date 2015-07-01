@@ -68,13 +68,19 @@ public class ClientView extends Scene {
     }
 
     private void setBuyProduct(Button button) {
-        Alert dialog = new Alert(Alert.AlertType.CONFIRMATION);
-        ObservableList<Product> obsProducts = products.getSelectionModel().getSelectedItems();
-        TableView<Product> selectedProducts = new TableView<>();
+        Alert buyProductsDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert outofStockDialog = new Alert(Alert.AlertType.CONFIRMATION);
 
-        dialog.setTitle("Buy Products");
-        dialog.setHeaderText("Please place your order!");
-        dialog.getDialogPane().setContent(selectedProducts);
+        TableView<Product> selectedProducts = new TableView<>();
+        TableView<Product> outOfStockProducts = new TableView<>();
+
+        buyProductsDialog.setTitle("Buy Products");
+        buyProductsDialog.setHeaderText("Please place your order!");
+        buyProductsDialog.getDialogPane().setContent(selectedProducts);
+
+        outofStockDialog.setTitle("Out of Stock");
+        outofStockDialog.setHeaderText("We are out of stock for these products!");
+        outofStockDialog.getDialogPane().setContent(new VBox(outOfStockProducts, new Label("Do you want to receive a notification for theses items?")));
 
         TableColumn<Product, String> name = new TableColumn<>("Name");
         name.setCellValueFactory(new PropertyValueFactory<>("name"));
@@ -86,26 +92,49 @@ public class ClientView extends Scene {
         quantity.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         quantity.setOnEditCommit(t -> (t.getTableView().getItems().get(t.getTablePosition().getRow())).setQuantity(t.getNewValue()));
 
+        TableColumn<Product, String> name1 = new TableColumn<>("Name");
+        name1.setCellValueFactory(new PropertyValueFactory<>("name"));
+        TableColumn<Product, String> expirationDate1 = new TableColumn<>("Expiration Date");
+        expirationDate1.setCellValueFactory(new PropertyValueFactory<>("expirationString"));
+        expirationDate1.setPrefWidth(100);
+        TableColumn<Product, Integer> quantity1 = new TableColumn<>("Quantity");
+        quantity1.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        quantity1.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        quantity1.setOnEditCommit(t -> (t.getTableView().getItems().get(t.getTablePosition().getRow())).setQuantity(t.getNewValue()));
+
         selectedProducts.setEditable(true);
         selectedProducts.getColumns().addAll(name, expirationDate, quantity);
 
+        outOfStockProducts.setEditable(true);
+        outOfStockProducts.getColumns().addAll(name1, expirationDate1, quantity1);
+
         button.setOnAction(event -> {
-            Optional<ButtonType> result = dialog.showAndWait();
+            ObservableList<Product> obsProducts = products.getSelectionModel().getSelectedItems();
             selectedProducts.setItems(obsProducts);
+            quantity.setVisible(false);
+            quantity.setVisible(true);
+            Optional<ButtonType> result = buyProductsDialog.showAndWait();
             result.ifPresent(r ->
             {
-                if(r == ButtonType.OK)
+                if (r == ButtonType.OK)
                 {
-                    controller.buyProducts(obsProducts);
+                    ObservableList<Product> outOfStock = controller.buyProducts(obsProducts);
 
-                    if(obsProducts.size() != 0) {
-                        // TODO (quando tá faltando produtos)
+                    if (outOfStock.size() > 0)
+                    {
+                        outOfStockProducts.setItems(outOfStock);
+                        quantity1.setVisible(false);
+                        quantity1.setVisible(true);
+                        Optional<ButtonType> result1 = outofStockDialog.showAndWait();
+                        result1.ifPresent((b) -> {
+                            if (b == ButtonType.OK)
+                                controller.requestProducts(outOfStock);
+                        });
                     }
-
-                    products.getColumns().get(0).setVisible(false);
-                    products.getColumns().get(0).setVisible(true);
                 }
             });
+            refresh();
+
         });
     }
 
@@ -127,14 +156,18 @@ public class ClientView extends Scene {
 
                 String productFilter = newValue.toLowerCase();
 
-                if (product.getName().toLowerCase().contains(productFilter))
-                    return true;
-                if (product.getProvider().toLowerCase().contains(productFilter))
-                    return true;
-                return false;
+                return product.getName().toLowerCase().contains(productFilter) || product.getProvider().toLowerCase().contains(productFilter);
             });
         });
 
         products.setItems(sortedProduct);
+    }
+
+    private void refresh()
+    {
+        controller.refreshProducts();
+        products.getColumns().get(0).setVisible(false);
+        products.getColumns().get(0).setVisible(true);
+
     }
 }

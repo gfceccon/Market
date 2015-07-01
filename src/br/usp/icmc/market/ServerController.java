@@ -4,11 +4,14 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ServerController
 {
@@ -66,11 +69,11 @@ public class ServerController
 				while(!quit)
 				{
 					Message message = (Message)inputStream.readObject();
-					System.out.println(message);
 					switch (message)
 					{
 						case GET_PRODUCTS:
 						{
+							outputStream.reset();
 							for(Product p : products)
 							{
 								outputStream.writeObject(p);
@@ -231,9 +234,7 @@ public class ServerController
 				filter(u -> u.getLogin().compareTo(inputUser.getLogin()) == 0).
 				filter(u1 -> u1.comparePassword(inputUser)).
 				findAny();
-		if(result.isPresent())
-			return true;
-		return false;
+		return result.isPresent();
 	}
 
 	public ObservableList<User> getUsers()
@@ -271,7 +272,7 @@ public class ServerController
 				.stream()
 				.filter(filteredProduct -> filteredProduct.getQuantity() > 0)
 				.forEach(obsProduct -> products.stream().filter(product -> product.compareTo(obsProduct) == 0)
-				.findAny()
-				.ifPresent(p -> p.add(obsProduct.getQuantity())));
+						.findAny()
+						.ifPresent(p -> p.add(obsProduct.getQuantity())));
 	}
 }
