@@ -72,11 +72,7 @@ public class ClientController {
 
             Object input =  inputStream.readObject();
             String salt = (String)input;
-            if (salt.isEmpty())
-            {
-                //TODO
-            }
-            else
+            if (!salt.isEmpty())
             {
                 user = new User();
                 user.setLogin(username);

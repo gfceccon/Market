@@ -93,7 +93,7 @@ public class ClientMain extends Application {
             if(controller.login(txtUser.getText(), txtPassword.getText())){
                 primaryStage.setScene(new ClientView(new Pane()));
             } else {
-                error.setContentText("Incorrect Password!");
+                error.setContentText("Incorrect Username or Password!");
                 error.show();
             }
         });
