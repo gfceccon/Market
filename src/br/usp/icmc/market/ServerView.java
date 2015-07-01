@@ -5,11 +5,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -17,6 +19,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import javafx.util.Callback;
+import javafx.util.converter.IntegerStringConverter;
 
 import java.io.File;
 import java.util.Optional;
@@ -107,6 +111,7 @@ public class ServerView extends Scene {
         fillTable();
         setAddProductButton(addProduct);
         setUpdateProductButton(updateProduct);
+        setAskProvider(askProvider);
 
         setImportMenu(menuImportUsers, "Users");
         setImportMenu(menuImportProducts, "Products");
@@ -118,12 +123,12 @@ public class ServerView extends Scene {
 	private void setAskProvider(Button button)
 	{
 		Alert dialog = new Alert(Alert.AlertType.CONFIRMATION);
-		ComboBox<String> providerComboBox = new ComboBox<>(FXCollections.observableArrayList(controller.getProviders()));
+		ComboBox<String> providerComboBox = new ComboBox<>();
 		providerComboBox.setValue("Provider");
 		ObservableList<Product> obsProducts = FXCollections.observableArrayList();
 
 
-		Pane pane = new Pane();
+		VBox pane =  new VBox();
 
 		dialog.setTitle("Add User");
 		dialog.setHeaderText("Insert user information!");
@@ -135,17 +140,35 @@ public class ServerView extends Scene {
 		expirationDate.setCellValueFactory(new PropertyValueFactory<>("expirationString"));
 		TableColumn<Product, Integer> quantity = new TableColumn<>("Quantity");
 		quantity.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-		quantity.setEditable(true);
+        quantity.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        quantity.setOnEditCommit(
+                t -> (t.getTableView().getItems().get(
+                        t.getTablePosition().getRow())
+                ).setQuantity(t.getNewValue())
+        );
+        providerProducts.setEditable(true);
 
-		providerProducts.getColumns().addAll(name, expirationDate, quantity);
-		providerProducts.selectionModelProperty().get().setSelectionMode(SelectionMode.MULTIPLE);
+        providerProducts.getColumns().addAll(name, expirationDate, quantity);
+        providerProducts.setItems(obsProducts);
 		pane.getChildren().addAll(providerComboBox, providerProducts);
 		providerComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
 			obsProducts.setAll(controller.getProducts(newValue));
+            expirationDate.setVisible(false);
+            expirationDate.setVisible(true);
 		});
 
 		button.setOnAction(event -> {
+            providerComboBox.getItems().setAll(FXCollections.observableArrayList(controller.getProviders()));
 			Optional<ButtonType> result = dialog.showAndWait();
+            result.ifPresent(r ->
+            {
+                if(r == ButtonType.OK)
+                {
+                    controller.provide(obsProducts);
+                    products.getColumns().get(0).setVisible(false);
+                    products.getColumns().get(0).setVisible(true);
+                }
+            });
 		});
 	}
 
@@ -245,7 +268,7 @@ public class ServerView extends Scene {
         dialog.getDialogPane().setContent(pane);
 
         button.setOnAction(event -> {
-            Platform.runLater(() -> nameField.requestFocus());
+            Platform.runLater(nameField::requestFocus);
             Optional<ButtonType> returnValue = dialog.showAndWait();
             if (returnValue.isPresent() && returnValue.get().equals(ButtonType.OK))
             {

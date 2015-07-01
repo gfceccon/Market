@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
-public class Product implements Comparable<Product>, Serializable, CSVSerializable
+public class Product implements Comparable<Product>, Serializable, CSVSerializable, Cloneable
 {
 	static final long serialVersionUID = 42L;
 
@@ -137,5 +137,29 @@ public class Product implements Comparable<Product>, Serializable, CSVSerializab
 		ret[5] = this.provider;
 
 		return ret;
+	}
+
+	public Product clone()
+	{
+		Product object = null;
+		try
+		{
+			object = (Product) super.clone();
+			object.id = UUID.fromString(this.id.toString());
+			object.expirationDate = LocalDate.of(expirationDate.getYear(),
+					expirationDate.getMonth(),
+					expirationDate.getDayOfMonth());
+		}
+		catch (CloneNotSupportedException e)
+		{
+			e.printStackTrace();
+		}
+		return object;
+	}
+
+	public void add(int quantity)
+	{
+		if(quantity > 0)
+			setQuantity(this.quantity + quantity);
 	}
 }

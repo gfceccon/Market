@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
@@ -19,11 +20,6 @@ public class ServerController
 	private ArrayList<Request> requests;
 	private ServerSocket socket;
 	private ArrayList<ClientThread> clients;
-
-	public String[] getProviders()
-	{
-		return (String[])products.stream().map(Product::getName).distinct().toArray();
-	}
 
 	private class ServerThread extends Thread
 	{
@@ -182,9 +178,15 @@ public class ServerController
 		return Message.OK;
 	}
 
-	public Product[] getProducts(String provider)
+	public ArrayList<Product> getProducts(String provider)
 	{
-		return (Product[])products.stream().filter(filterProduct -> filterProduct.getProvider().compareTo(provider) == 0).toArray();
+		ArrayList<Product> providerProducts = new ArrayList<>();
+		products.stream().filter(filterProduct -> filterProduct.getProvider().compareTo(provider) == 0).forEach(p ->
+		{
+			Product copy = p.clone();
+			providerProducts.add(copy);
+		});
+		return providerProducts;
 	}
 
 	public void setUsers(ObservableList<User> users) {
@@ -242,5 +244,18 @@ public class ServerController
 	public ObservableList<Product> getProducts()
 	{
 		return products;
+	}
+
+	public ArrayList<String> getProviders()
+	{
+		ArrayList<String> providers = new ArrayList<>();
+		products.stream().map(Product::getProvider).distinct().forEach(providers::add);
+		return providers;
+	}
+
+	public void provide(ObservableList<Product> obsProducts)
+	{
+		obsProducts.stream().filter(filteredProduct -> filteredProduct.getQuantity() > 0).
+				forEach(obsProduct -> products.stream().filter(product -> product.compareTo(obsProduct) == 0).findAny().ifPresent(p -> p.add(obsProduct.getQuantity())));
 	}
 }
