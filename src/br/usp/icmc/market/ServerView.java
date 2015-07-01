@@ -65,21 +65,10 @@ public class ServerView extends Scene {
         menuBar.getMenus().addAll(menuFile);
         /* END MENU BLOCK */
 
-		/* DATE PICKER BLOCK */
-        Alert datePickerModal = new Alert(Alert.AlertType.CONFIRMATION);
-        DatePicker datePicker = new DatePicker();
-        datePickerModal.setTitle("Choose a Date");
-        datePickerModal.setHeaderText("Choose a date!");
-        datePickerModal.getDialogPane().setContent(datePicker);
-
 		/* TABS BLOCK */
         userSearch = new TextField();
         userSearch.setPromptText("Search user by login or name");
-        Button addUser = new Button("Add User");
-        Button removeUser = new Button("Remove User");
-        HBox hBoxUsersTab = new HBox(addUser, removeUser);
-        hBoxUsersTab.setAlignment(Pos.CENTER);
-        VBox vBoxUsersTab = new VBox(userSearch, users, hBoxUsersTab);
+        VBox vBoxUsersTab = new VBox(userSearch, users);
         Tab usersTab = new Tab("Users", vBoxUsersTab);
         usersTab.setClosable(false);
 
@@ -103,7 +92,6 @@ public class ServerView extends Scene {
         pane.getChildren().add(verticalPane);
         /* END TABS BLOCK */
 
-
 		/* SETUP FUNCTIONS*/
         addColumns();
         fillTable();
@@ -125,17 +113,17 @@ public class ServerView extends Scene {
 		providerComboBox.setValue("Provider");
 		ObservableList<Product> obsProducts = FXCollections.observableArrayList();
 
-
 		VBox pane =  new VBox();
 
-		dialog.setTitle("Add User");
-		dialog.setHeaderText("Insert user information!");
+		dialog.setTitle("Ask Provider");
+		dialog.setHeaderText("Please place your order!");
 		dialog.getDialogPane().setContent(pane);
 		TableView<Product> providerProducts = new TableView<>();
 		TableColumn<Product, String> name = new TableColumn<>("Name");
 		name.setCellValueFactory(new PropertyValueFactory<>("name"));
 		TableColumn<Product, String> expirationDate = new TableColumn<>("Expiration Date");
 		expirationDate.setCellValueFactory(new PropertyValueFactory<>("expirationString"));
+        expirationDate.setPrefWidth(100);
 		TableColumn<Product, Integer> quantity = new TableColumn<>("Quantity");
 		quantity.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         quantity.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
@@ -218,10 +206,8 @@ public class ServerView extends Scene {
 
         menu.setOnAction(event -> {
             File selectedFile = fileChooser.showSaveDialog(fileChooserStage);
-            if (selectedFile != null)
-            {
-                switch (type)
-                {
+            if (selectedFile != null) {
+                switch (type) {
                     case "Users":
                         manager.writeFile(selectedFile, controller.getUsers());
                         break;
@@ -240,8 +226,15 @@ public class ServerView extends Scene {
         TextField nameField = new TextField();
         TextField priceField = new TextField();
         TextField quantityField = new TextField();
-        TextField expirationDateField = new TextField();
+        DatePicker expirationDateField = new DatePicker();
         TextField providerField = new TextField();
+
+        /* DATE PICKER BLOCK */
+        Alert datePickerModal = new Alert(Alert.AlertType.CONFIRMATION);
+        DatePicker datePicker = new DatePicker();
+        datePickerModal.setTitle("Choose a Date");
+        datePickerModal.setHeaderText("Choose a date!");
+        datePickerModal.getDialogPane().setContent(datePicker);
 
         Label nameLabel = new Label("Product Name: ");
         Label priceLabel = new Label("Price: ");
@@ -270,9 +263,8 @@ public class ServerView extends Scene {
             Optional<ButtonType> returnValue = dialog.showAndWait();
             if (returnValue.isPresent() && returnValue.get().equals(ButtonType.OK))
             {
-                try
-                {
-                    controller.addProduct(nameField.getText(), priceField.getText(), quantityField.getText(), expirationDateField.getText(), providerField.getText());
+                try{
+                    controller.addProduct(nameField.getText(), priceField.getText(), quantityField.getText(), expirationDateField.getValue(), providerField.getText());
                 } catch (Exception e)
                 {
                     e.printStackTrace();
@@ -285,7 +277,7 @@ public class ServerView extends Scene {
             nameField.clear();
             priceField.clear();
             quantityField.clear();
-            expirationDateField.clear();
+            expirationDateField.setValue(null);
             providerField.clear();
         });
     }
@@ -305,7 +297,6 @@ public class ServerView extends Scene {
         GridPane pane = new GridPane();
 
         pane.addColumn(0, priceLabel, quantityLabel);
-
         pane.addColumn(1, priceField, quantityField);
 
         dialog.setHeaderText("Update product information!");
@@ -426,7 +417,6 @@ public class ServerView extends Scene {
                 return false;
             });
         });
-
 
         users.setItems(sortedUser);
         products.setItems(sortedProduct);

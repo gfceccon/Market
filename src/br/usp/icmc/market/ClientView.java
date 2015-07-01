@@ -25,10 +25,8 @@ public class ClientView extends Scene {
 		/* TABS BLOCK */
         productSearch = new TextField();
         productSearch.setPromptText("Search product by name or provider");
-        Button addProduct = new Button("Add Product");
-        Button updateProduct = new Button("Update Product");
-        Button askProvider = new Button("Ask Provider");
-        HBox hBoxProductsTab = new HBox(addProduct, updateProduct, askProvider);
+        Button buy = new Button("Buy");
+        HBox hBoxProductsTab = new HBox(buy);
         hBoxProductsTab.setAlignment(Pos.CENTER);
         VBox vBoxProductsTab = new VBox(productSearch, products, hBoxProductsTab);
         Tab productsTab = new Tab("Products", vBoxProductsTab);
