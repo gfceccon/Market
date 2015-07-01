@@ -2,6 +2,7 @@ package br.usp.icmc.market;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.TableView;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -57,6 +58,7 @@ public class ClientController {
         ArrayList<Product> newList = new ArrayList<>();
         try
         {
+            outputStream.reset();
             outputStream.writeObject(Message.GET_PRODUCTS);
             Object input;
             boolean quit = false;
@@ -88,22 +90,24 @@ public class ClientController {
         return FXCollections.observableArrayList(newList);
     }
 
-    public void buyProducts(ObservableList<Product> products){
+    public ObservableList<Product> buyProducts(ObservableList<Product> products){
+        ObservableList<Product> outOfStock = FXCollections.observableArrayList();
         try{
+            outputStream.reset();
             outputStream.writeObject(Message.BUY_PRODUCTS);
-
             for(Product p : products){
                 outputStream.writeObject(p);
                 Message m = (Message) inputStream.readObject();
 
-                if(m == Message.OK)
-                    products.remove(p);
+                if(m == Message.OUT_OF_STOCK)
+                    outOfStock.add(p);
             }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+
+            outputStream.writeObject(Message.END);
+        } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         }
+        return outOfStock;
     }
 
     public boolean login(String username, String password){
@@ -113,6 +117,7 @@ public class ClientController {
         user.setPassword(password);
 
         try {
+            outputStream.reset();
             outputStream.writeObject(Message.LOGIN_USER);
             outputStream.writeObject(user);
 
@@ -142,4 +147,21 @@ public class ClientController {
         return false;
     }
 
+    public void requestProducts(ObservableList<Product> outOfStockProducts)
+    {
+        try
+        {
+            outputStream.reset();
+            outputStream.writeObject(Message.RECEIVE_NOTIFICATION);
+            for(Product p : outOfStockProducts)
+            {
+                outputStream.writeObject(p);
+            }
+            outputStream.writeObject(Message.END);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
 }

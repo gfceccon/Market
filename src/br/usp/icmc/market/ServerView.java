@@ -75,12 +75,19 @@ public class ServerView extends Scene {
 
         productSearch = new TextField();
         productSearch.setPromptText("Search product by name or provider");
+        productSearch.setPrefColumnCount(65);
+        Button refresh = new Button("Refresh");
+        refresh.setOnAction(event -> {
+            products.getColumns().get(0).setVisible(false);
+            products.getColumns().get(0).setVisible(true);
+        });
         Button addProduct = new Button("Add Product");
         Button updateProduct = new Button("Update Product");
         Button askProvider = new Button("Ask Provider");
         HBox hBoxProductsTab = new HBox(addProduct, updateProduct, askProvider);
         hBoxProductsTab.setAlignment(Pos.CENTER);
-        VBox vBoxProductsTab = new VBox(productSearch, products, hBoxProductsTab);
+        HBox productHeader = new HBox(productSearch, refresh);
+        VBox vBoxProductsTab = new VBox(productHeader, products, hBoxProductsTab);
         Tab productsTab = new Tab("Products", vBoxProductsTab);
         productsTab.setClosable(false);
 
@@ -399,11 +406,7 @@ public class ServerView extends Scene {
 
                 String userFilter = newValue.toLowerCase();
 
-                if (user.getLogin().toLowerCase().contains(userFilter))
-                    return true;
-                if (user.getName().toLowerCase().contains(userFilter))
-                    return true;
-                return false;
+                return user.getLogin().toLowerCase().contains(userFilter) || user.getName().toLowerCase().contains(userFilter);
             });
         });
 
@@ -414,11 +417,7 @@ public class ServerView extends Scene {
 
                 String productFilter = newValue.toLowerCase();
 
-                if (product.getName().toLowerCase().contains(productFilter))
-                    return true;
-                if (product.getProvider().toLowerCase().contains(productFilter))
-                    return true;
-                return false;
+                return product.getName().toLowerCase().contains(productFilter) || product.getProvider().toLowerCase().contains(productFilter);
             });
         });
 

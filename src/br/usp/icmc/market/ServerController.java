@@ -19,7 +19,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-
 public class ServerController
 {
 	private static ServerController instance;
@@ -76,11 +75,11 @@ public class ServerController
 				while(!quit)
 				{
 					Message message = (Message)inputStream.readObject();
-					System.out.println(message);
 					switch (message)
 					{
 						case GET_PRODUCTS:
 						{
+							outputStream.reset();
 							for(Product p : products)
 							{
 								outputStream.writeObject(p);
@@ -241,9 +240,7 @@ public class ServerController
 				filter(u -> u.getLogin().compareTo(inputUser.getLogin()) == 0).
 				filter(u1 -> u1.comparePassword(inputUser)).
 				findAny();
-		if(result.isPresent())
-			return true;
-		return false;
+		return result.isPresent();
 	}
 
 	public ObservableList<User> getUsers()
