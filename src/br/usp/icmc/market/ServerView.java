@@ -397,7 +397,7 @@ public class ServerView extends Scene {
 
                 if (user.getLogin().toLowerCase().contains(userFilter))
                     return true;
-                else if (user.getName().toLowerCase().contains(userFilter))
+                if (user.getName().toLowerCase().contains(userFilter))
                     return true;
                 return false;
             });
@@ -408,11 +408,11 @@ public class ServerView extends Scene {
                 if (newValue == null || newValue.isEmpty())
                     return true;
 
-                String bookFilter = newValue.toLowerCase();
+                String productFilter = newValue.toLowerCase();
 
-                if (product.getName().toLowerCase().contains(bookFilter))
+                if (product.getName().toLowerCase().contains(productFilter))
                     return true;
-                else if (product.getProvider().contains(bookFilter))
+                if (product.getProvider().toLowerCase().contains(productFilter))
                     return true;
                 return false;
             });

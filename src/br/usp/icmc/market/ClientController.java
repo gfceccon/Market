@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ClientController {
     private static ClientController instance;
@@ -15,7 +16,6 @@ public class ClientController {
     private ObjectOutputStream outputStream;
 
     private ClientController() {
-        products = FXCollections.observableArrayList();
     }
 
     public void connect(String IP){
@@ -35,6 +35,8 @@ public class ClientController {
     }
 
     public ObservableList<Product> getProducts() {
+        if(products == null)
+            products = refreshProducts();
         return products;
     }
 
@@ -52,8 +54,38 @@ public class ClientController {
     }
 
     public ObservableList<Product> refreshProducts() {
-        //TODO
-        return null;
+        ArrayList<Product> newList = new ArrayList<>();
+        try
+        {
+            outputStream.writeObject(Message.GET_PRODUCTS);
+            Object input;
+            boolean quit = false;
+            while(!quit)
+            {
+                input = inputStream.readObject();
+                if(input instanceof Message)
+                {
+                    switch ((Message)input)
+                    {
+                        case END:
+                            quit = true;
+                            break;
+                    }
+                }
+                else if(input instanceof Product)
+                {
+                    Product p = (Product) input;
+                    newList.add(p);
+                }
+            }
+
+        }
+        catch (IOException | ClassNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
+        return FXCollections.observableArrayList(newList);
     }
 
     public void buyProduct(){
@@ -99,4 +131,5 @@ public class ClientController {
 
         return false;
     }
+
 }

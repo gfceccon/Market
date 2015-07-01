@@ -70,6 +70,15 @@ public class ServerController
 					System.out.println(message);
 					switch (message)
 					{
+						case GET_PRODUCTS:
+						{
+							for(Product p : products)
+							{
+								outputStream.writeObject(p);
+							}
+							outputStream.writeObject(Message.END);
+						}
+							break;
 						case REGISTER_USER:
 						{
 							User u = (User) inputStream.readObject();
