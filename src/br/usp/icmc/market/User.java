@@ -71,7 +71,7 @@ public class User implements Serializable, CSVSerializable
             //Get a random salt
             sr.nextBytes(saltByte);
             //return salt
-            this.salt = saltByte.toString();
+            setSalt(saltByte.toString());
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -134,7 +134,7 @@ public class User implements Serializable, CSVSerializable
 
 	public boolean comparePassword(User user)
 	{
-		return password.compareTo(this.password) == 0;
+		return password.compareTo(user.password) == 0;
 	}
 
 	@Override

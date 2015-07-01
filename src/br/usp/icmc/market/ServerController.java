@@ -81,14 +81,13 @@ public class ServerController
 						{
 							User u = (User) inputStream.readObject();
 							user = getUser(u);
-							System.out.println(user);
 							if (user == null)
 								outputStream.writeObject("");
 							else
 							{
 								outputStream.writeObject(user.getSalt());
-								u = (User) inputStream.readObject();
-								if (loginUser(user, u))
+								User u1 = (User) inputStream.readObject();
+								if (loginUser(u1))
 									outputStream.writeObject(Message.OK);
 								else
 									outputStream.writeObject(Message.INCORRECT_PASSWORD);
@@ -180,17 +179,6 @@ public class ServerController
 		return Message.OK;
 	}
 
-	public ArrayList<Product> getProducts(String provider)
-	{
-		ArrayList<Product> providerProducts = new ArrayList<>();
-		products.stream().filter(filterProduct -> filterProduct.getProvider().compareTo(provider) == 0).forEach(p ->
-		{
-			Product copy = p.clone();
-			providerProducts.add(copy);
-		});
-		return providerProducts;
-	}
-
 	public void setUsers(ObservableList<User> users) {
 		this.users = users;
 	}
@@ -230,12 +218,15 @@ public class ServerController
 		return null;
 	}
 
-	protected synchronized boolean loginUser(User login, User inputUser)
+	protected synchronized boolean loginUser(User inputUser)
 	{
-		return users.stream().
-				filter(u -> u.getLogin().compareTo(login.getLogin()) == 0 && u.comparePassword(inputUser)).
-				findAny().
-				isPresent();
+		Optional<User> result =  users.stream().
+				filter(u -> u.getLogin().compareTo(inputUser.getLogin()) == 0).
+				filter(u1 -> u1.comparePassword(inputUser)).
+				findAny();
+		if(result.isPresent())
+			return true;
+		return false;
 	}
 
 	public ObservableList<User> getUsers()
@@ -246,6 +237,18 @@ public class ServerController
 	public ObservableList<Product> getProducts()
 	{
 		return products;
+	}
+
+	public ArrayList<Product> getProducts(String provider)
+	{
+		ArrayList<Product> providerProducts = new ArrayList<>();
+		products.stream().filter(filterProduct -> filterProduct.getProvider().compareTo(provider) == 0).forEach(p ->
+		{
+			Product copy = p.clone();
+			p.setQuantity(0);
+			providerProducts.add(copy);
+		});
+		return providerProducts;
 	}
 
 	public ArrayList<String> getProviders()

@@ -18,7 +18,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 import javafx.util.converter.IntegerStringConverter;
 
 import java.io.File;

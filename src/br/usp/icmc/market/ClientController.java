@@ -69,7 +69,6 @@ public class ClientController {
         try {
             outputStream.writeObject(Message.LOGIN_USER);
             outputStream.writeObject(user);
-            System.out.println(user);
 
             Object input =  inputStream.readObject();
             String salt = (String)input;
@@ -79,6 +78,9 @@ public class ClientController {
             }
             else
             {
+                user = new User();
+                user.setLogin(username);
+                user.setPassword(password);
                 user.setSalt(salt);
                 outputStream.writeObject(user);
                 switch ((Message) inputStream.readObject())
