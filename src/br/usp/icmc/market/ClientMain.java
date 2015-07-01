@@ -93,7 +93,7 @@ public class ClientMain extends Application {
             if(controller.login(txtUser.getText(), txtPassword.getText())){
                 primaryStage.setScene(new ClientView(new Pane()));
             } else {
-                error.setContentText("Incorrect Password!");
+                error.setContentText("Incorrect Username or Password!");
                 error.show();
             }
         });
@@ -147,15 +147,20 @@ public class ClientMain extends Application {
                     Message response = controller.addUser(nameField.getText(), addressField.getText(), phoneField.getText(), emailField.getText(), loginField.getText(), passwordField.getText());
                     if(response == null)
                     {
-                        //TODO
+                        error.setContentText("Error creating user, please try again later.");
+                        error.show();
                     }
                     else switch (response)
                     {
                         case USER_ALREADY_EXISTS:
-                            //TODO
+                            error.setContentText("This login already exists!");
+                            error.show();
                             break;
                         case USER_CREATED:
-                            //TODO
+                            Alert UserCreatedAlert = new Alert(Alert.AlertType.INFORMATION);
+                            UserCreatedAlert.setTitle("User Created");
+                            UserCreatedAlert.setHeaderText("User successfully created!");
+                            UserCreatedAlert.show();
                             break;
                     }
                 } catch (Exception e) {

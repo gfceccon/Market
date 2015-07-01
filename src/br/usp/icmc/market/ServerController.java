@@ -7,7 +7,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -268,7 +267,11 @@ public class ServerController
 
 	public void provide(ObservableList<Product> obsProducts)
 	{
-		obsProducts.stream().filter(filteredProduct -> filteredProduct.getQuantity() > 0).
-				forEach(obsProduct -> products.stream().filter(product -> product.compareTo(obsProduct) == 0).findAny().ifPresent(p -> p.add(obsProduct.getQuantity())));
+		obsProducts
+				.stream()
+				.filter(filteredProduct -> filteredProduct.getQuantity() > 0)
+				.forEach(obsProduct -> products.stream().filter(product -> product.compareTo(obsProduct) == 0)
+				.findAny()
+				.ifPresent(p -> p.add(obsProduct.getQuantity())));
 	}
 }
