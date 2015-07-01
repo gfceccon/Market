@@ -23,12 +23,13 @@ public class ServerController
 
 	private class ServerThread extends Thread
 	{
+		public boolean quit = false;
 		@Override
 		public void run()
 		{
 			try
 			{
-				while(true)
+				while(!quit)
 				{
 					Socket s = socket.accept();
 					if(s != null)
@@ -143,6 +144,7 @@ public class ServerController
 				}
 			}catch (Exception e)
 			{
+				e.printStackTrace();
 			}
 		}
 	}

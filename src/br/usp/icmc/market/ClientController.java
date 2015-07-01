@@ -11,7 +11,6 @@ import java.net.Socket;
 public class ClientController {
     private static ClientController instance;
     private ObservableList<Product> products;
-    private Socket socket;
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
 
@@ -21,7 +20,7 @@ public class ClientController {
 
     public void connect(String IP){
         try {
-            socket = new Socket(IP, 14786);
+            Socket socket = new Socket(IP, 14786);
             outputStream = new ObjectOutputStream(socket.getOutputStream());
             inputStream = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {

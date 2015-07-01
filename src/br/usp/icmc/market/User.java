@@ -37,10 +37,10 @@ public class User implements Serializable, CSVSerializable
             //This bytes[] has bytes in decimal format;
             //Convert it to hexadecimal format
             StringBuilder sb = new StringBuilder();
-            for(int i=0; i< bytes.length ;i++)
-            {
-                sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-            }
+			for (byte aByte : bytes)
+			{
+				sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+			}
             //Get complete hashed password in hex format
             generatedPassword = sb.toString();
         }
@@ -63,7 +63,7 @@ public class User implements Serializable, CSVSerializable
 		this.password = password;
 
         //Always use a SecureRandom generator
-        SecureRandom sr = null;
+        SecureRandom sr;
         try {
             sr = SecureRandom.getInstance("SHA1PRNG");
             //Create array for salt

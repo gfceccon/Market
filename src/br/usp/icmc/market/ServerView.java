@@ -5,7 +5,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -315,7 +314,7 @@ public class ServerView extends Scene {
 
         button.setOnAction(event -> {
             if(products.selectionModelProperty().get().getSelectedItem() != null) {
-                Platform.runLater(() -> priceField.requestFocus());
+                Platform.runLater(priceField::requestFocus);
                 Optional<ButtonType> returnValue = dialog.showAndWait();
                 if (returnValue.isPresent() && returnValue.get().equals(ButtonType.OK) && products.selectionModelProperty().get().getSelectedItem() != null) {
                     dialog.setTitle("Update " + products.selectionModelProperty().get().getSelectedItem().getName());

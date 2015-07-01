@@ -140,7 +140,7 @@ public class ClientMain extends Application {
         dialog.getDialogPane().setContent(pane);
 
         button.setOnAction(event -> {
-            Platform.runLater(() -> nameField.requestFocus());
+            Platform.runLater(nameField::requestFocus);
             Optional<ButtonType> returnValue = dialog.showAndWait();
             if (returnValue.isPresent() && returnValue.get().equals(ButtonType.OK)) {
                 try {
