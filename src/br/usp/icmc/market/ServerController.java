@@ -6,6 +6,8 @@ import javafx.collections.ObservableList;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class ServerController
@@ -191,6 +193,14 @@ public class ServerController
 		}
 		users.add(user);
 		return Message.USER_CREATED;
+	}
+
+	public Product addProduct(String name, String price, String quantity, String expirationDate, String provider) throws Exception
+	{
+		Product newProduct = new Product(name, Float.parseFloat(price), Integer.parseInt(quantity), LocalDate.parse(expirationDate, DateTimeFormatter.ofPattern("dd'/'MM'/'yyyy")), provider); // Instantiates a new user
+		products.add(newProduct); // Adds the user to the list in memory
+
+		return newProduct;
 	}
 
 	protected synchronized User getUser(User user)
