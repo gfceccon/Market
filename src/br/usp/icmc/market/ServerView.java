@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -121,7 +122,7 @@ public class ServerView extends Scene {
 		providerComboBox.setValue("Provider");
 		ObservableList<Product> obsProducts = FXCollections.observableArrayList();
 
-		VBox pane =  new VBox();
+        VBox pane =  new VBox();
 
 		dialog.setTitle("Ask Provider");
 		dialog.setHeaderText("Please place your order!");
@@ -159,6 +160,9 @@ public class ServerView extends Scene {
                 if(r == ButtonType.OK)
                 {
                     controller.provide(obsProducts);
+                    ArrayList<Product> newProducts = new ArrayList<>();
+                    obsProducts.stream().forEach(newProducts::add);
+                    controller.notifyUser(newProducts);
                     products.getColumns().get(0).setVisible(false);
                     products.getColumns().get(0).setVisible(true);
                 }
@@ -379,7 +383,7 @@ public class ServerView extends Scene {
         quantity.setCellValueFactory(new PropertyValueFactory<>("quantity"));
 
         products.getColumns().addAll(name, price, quantity, expirationDate, provider);
-        products.selectionModelProperty().get().setSelectionMode(SelectionMode.MULTIPLE);
+        products.selectionModelProperty().get().setSelectionMode(SelectionMode.SINGLE);
     }
 
     /*
@@ -423,5 +427,17 @@ public class ServerView extends Scene {
 
         users.setItems(sortedUser);
         products.setItems(sortedProduct);
+    }
+
+    public void onExit()
+    {
+        try
+        {
+            controller.destroy();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 }

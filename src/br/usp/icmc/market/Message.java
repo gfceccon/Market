@@ -2,6 +2,9 @@ package br.usp.icmc.market;
 
 import java.io.Serializable;
 
+/* Message
+ * Message system server-client
+ */
 public enum Message implements Serializable
 {
 	REGISTER_USER,
@@ -12,7 +15,6 @@ public enum Message implements Serializable
 	GET_PRODUCTS,
 	BUY_PRODUCTS,
 	RECEIVE_NOTIFICATION,
-	NOTIFICATION,
 	OUT_OF_STOCK,
 	OK,
 	END

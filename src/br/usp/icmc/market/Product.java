@@ -6,6 +6,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
+/* Product
+ * Represents a product
+ * Product is comparable by id, serializable (42 by default all serializable classes), CSV serializable and cloneable
+ */
 public class Product implements Comparable<Product>, Serializable, CSVSerializable, Cloneable
 {
 	static final long serialVersionUID = 42L;
@@ -139,6 +143,7 @@ public class Product implements Comparable<Product>, Serializable, CSVSerializab
 		return ret;
 	}
 
+	// Deep clone
 	public Product clone()
 	{
 		Product object = null;
@@ -157,6 +162,7 @@ public class Product implements Comparable<Product>, Serializable, CSVSerializab
 		return object;
 	}
 
+	// Add quantity
 	public void add(int quantity)
 	{
 		if(quantity > 0)

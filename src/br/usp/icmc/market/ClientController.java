@@ -2,7 +2,6 @@ package br.usp.icmc.market;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.TableView;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -10,15 +9,27 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
+/*
+  * Client Controller
+  * Manage server connection, input and output of products and local product list
+  * Manage user login and creation
+ */
+
 public class ClientController {
+    // Singleton
     private static ClientController instance;
+
+    // Product list
     private ObservableList<Product> products;
+
+    // I/O streams
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
 
     private ClientController() {
     }
 
+    // Connect to server by given IP
     public void connect(String IP){
         try {
             Socket socket = new Socket(IP, 14786);
@@ -29,6 +40,7 @@ public class ClientController {
         }
     }
 
+    //Singleton lazy initialization
     public static ClientController getInstance() {
         if (instance == null)
             instance = new ClientController();
@@ -41,6 +53,7 @@ public class ClientController {
         return products;
     }
 
+    // Add user, registering on server
     public Message addUser(String name, String address, String phone, String email, String login, String password){
         User newUser = new User(name, address, phone, email, login, password);
 
@@ -54,6 +67,7 @@ public class ClientController {
         return null;
     }
 
+    // Synchronize products with server
     public ObservableList<Product> refreshProducts() {
         ArrayList<Product> newList = new ArrayList<>();
         try
@@ -90,6 +104,7 @@ public class ClientController {
         return FXCollections.observableArrayList(newList);
     }
 
+    // Buy products, verifying stock quantity
     public ObservableList<Product> buyProducts(ObservableList<Product> products){
         ObservableList<Product> outOfStock = FXCollections.observableArrayList();
         try{
@@ -110,6 +125,7 @@ public class ClientController {
         return outOfStock;
     }
 
+    // Login user, with SHA crypto and server auth
     public boolean login(String username, String password){
         User user = new User();
 
@@ -147,6 +163,7 @@ public class ClientController {
         return false;
     }
 
+    // Create product list request from stock
     public void requestProducts(ObservableList<Product> outOfStockProducts)
     {
         try

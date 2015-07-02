@@ -15,19 +15,25 @@ import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+/* Server Controller
+ * Manage client connection, input and output of products and product list
+ * Manage user login, creation and requests
+ * Manage socket threads (multiple connections)
+ */
 public class ServerController
 {
 	private static ServerController instance;
+	private ServerThread server;
 	private ObservableList<User> users;
 	private ObservableList<Product> products;
 	private ArrayList<Request> requests;
 	private ServerSocket socket;
 	private ArrayList<ClientThread> clients;
 
+	// Server socket thread, accepts new connections and create client threads
 	private class ServerThread extends Thread
 	{
 		public boolean quit = false;
@@ -48,13 +54,17 @@ public class ServerController
 				}
 			}catch (Exception e)
 			{
-                e.printStackTrace();
+				if(!quit)
+                	e.printStackTrace();
 			}
 		}
 	}
 
+	// Client socket thread, controls client communication (user, products and requests)
 	private class ClientThread extends Thread
 	{
+		public boolean quit = false;
+
 		private Socket socket;
 		private ObjectInputStream inputStream;
 		private ObjectOutputStream outputStream;
@@ -69,14 +79,15 @@ public class ServerController
 		@Override
 		public void run()
 		{
-			boolean quit = false;
 			try
 			{
 				while(!quit)
 				{
+					//Reads the message header
 					Message message = (Message)inputStream.readObject();
 					switch (message)
 					{
+						// Refresh client product list
 						case GET_PRODUCTS:
 						{
 							outputStream.reset();
@@ -87,12 +98,14 @@ public class ServerController
 							outputStream.writeObject(Message.END);
 						}
 							break;
+						// Register new user
 						case REGISTER_USER:
 						{
 							User u = (User) inputStream.readObject();
 							outputStream.writeObject(addUser(u));
 						}
 							break;
+						// Login user (with auth)
 						case LOGIN_USER:
 						{
 							User u = (User) inputStream.readObject();
@@ -110,6 +123,7 @@ public class ServerController
 							}
 						}
 							break;
+						// Buy product list, returning availability of stock
 						case BUY_PRODUCTS:
 						{
 							boolean hasNext = true;
@@ -130,6 +144,7 @@ public class ServerController
 							}
 						}
 							break;
+						// User request
 						case RECEIVE_NOTIFICATION:
 						{
 							Request request = new Request(user);
@@ -159,7 +174,8 @@ public class ServerController
 				}
 			}catch (Exception e)
 			{
-				e.printStackTrace();
+				if(!quit)
+					e.printStackTrace();
 			}
 		}
 	}
@@ -173,7 +189,8 @@ public class ServerController
 		socket = new ServerSocket(14786);
 		clients = new ArrayList<>();
 
-        new ServerThread().start();
+        server = new ServerThread();
+		server.start();
 	}
 
 	public static ServerController getInstance() throws IOException
@@ -183,6 +200,7 @@ public class ServerController
 		return instance;
 	}
 
+	// Request a product, checking availability in stock and returning the correct Message
 	protected synchronized Message requestProduct(Product request)
 	{
 		try
@@ -203,6 +221,7 @@ public class ServerController
 		this.products = products;
 	}
 
+	// [Synchronized] Add user, checking for errors
 	protected synchronized Message addUser(User user)
 	{
 		if(users.stream().
@@ -216,6 +235,7 @@ public class ServerController
 		return Message.USER_CREATED;
 	}
 
+	// Register individual product
 	public Product addProduct(String name, String price, String quantity, LocalDate expirationDate, String provider) throws Exception
 	{
 		Product newProduct = new Product(name, Float.parseFloat(price), Integer.parseInt(quantity), expirationDate, provider); // Instantiates a new user
@@ -224,6 +244,7 @@ public class ServerController
 		return newProduct;
 	}
 
+	// Gets user by login, if exists
 	protected synchronized User getUser(User user)
 	{
 		Optional<User> result =  users.stream().
@@ -234,6 +255,7 @@ public class ServerController
 		return null;
 	}
 
+	// [Synchronized] Login user with auth
 	protected synchronized boolean loginUser(User inputUser)
 	{
 		Optional<User> result =  users.stream().
@@ -253,6 +275,7 @@ public class ServerController
 		return products;
 	}
 
+	// Get product list by provider
 	public ArrayList<Product> getProducts(String provider)
 	{
 		ArrayList<Product> providerProducts = new ArrayList<>();
@@ -272,6 +295,7 @@ public class ServerController
 		return providers;
 	}
 
+	// Add products to stock
 	public void provide(ObservableList<Product> obsProducts)
 	{
 		obsProducts
@@ -282,18 +306,28 @@ public class ServerController
 						.ifPresent(p -> p.add(obsProduct.getQuantity())));
 	}
 
+	// On exit call
+	public void destroy() throws IOException
+	{
+		for (ClientThread t : clients)
+		{
+			t.quit = true;
+			t.socket.close();
+		}
+		server.quit = true;
+		socket.close();
+	}
+
 	public void notifyUser(ArrayList<Product> newProducts)
 	{
 		Properties props = new Properties();
-		Session session = Session.getDefaultInstance(props, null);
-		ArrayList<String> productsOfInterest;
+		Session.getDefaultInstance(props, null);
+		final ArrayList<String> productsOfInterest = new ArrayList<>();
 
-		// Sender's email ID needs to be mentioned
-		String from = "smurfiru@gmail.com";//change accordingly
-		final String username = "smurfiru@gmail.com";//change accordingly
-		final String password = "tempmarket01";//change accordingly
+		String from = "smurfiru@gmail.com";
+		final String username = "smurfiru@gmail.com";
+		final String password = "tempmarket01";
 
-		// Assuming you are sending email through relay.jangosmtp.net
 		String host = "smtp.gmail.com";
 
 		props.put("mail.smtp.auth", "true");
@@ -301,20 +335,21 @@ public class ServerController
 		props.put("mail.smtp.host", host);
 		props.put("mail.smtp.port", "587");
 
-		for(Request req : requests)
+		for(Request request : requests)
 		{
-			productsOfInterest = new ArrayList<>();
-			for(Product p : req.products)
+			for(Product p : request.products)
 			{
-				if(newProducts.contains(p))
-				{
+				newProducts.stream().filter(product -> product.compareTo(p) == 0 && product.getQuantity() > p.getQuantity()).findAny().ifPresent(product1 -> {
+					request.products.remove(product1);
 					productsOfInterest.add(p.getName() + "\n");
-				}
+				});
 			}
+			if(request.products.isEmpty())
+				requests.remove(request);
 
 			if(!productsOfInterest.isEmpty())
 			{
-				String msgBody = "Dear " + req.user.getName() + ",\n\n" +
+				String msgBody = "Dear " + request.user.getName() + ",\n\n" +
 						"We are proud to announce that your requested products have finally arrived.\n" +
 						"Here is a list, in case you have forgotten:\n";
 
@@ -324,41 +359,28 @@ public class ServerController
 				}
 
 				try {
-					// Recipient's email ID needs to be mentioned.
-					String to = req.user.getEmail();
+					String to = request.user.getEmail();
 
-					// Get the Session object.
-					session = Session.getInstance(props,
+					Session session = Session.getInstance(props,
 							new javax.mail.Authenticator() {
 								protected PasswordAuthentication getPasswordAuthentication() {
 									return new PasswordAuthentication(username, password);
 								}
 							});
 
-					// Create a default MimeMessage object.
 					javax.mail.Message message = new MimeMessage(session);
 
-					// Set From: header field of the header.
-					message.setFrom(new InternetAddress(from));
+					message.setFrom(new InternetAddress(from, "Online Market System(no-reply)"));
 
-					// Set To: header field of the header.
 					message.setRecipients(javax.mail.Message.RecipientType.TO,
 							InternetAddress.parse(to));
 
-					// Set Subject: header field
 					message.setSubject("New Products in our Stock!");
-
-					// Now set the actual message
 					message.setText(msgBody);
-
-					// Send message
 					Transport.send(message);
-
-					System.out.println("Sent message successfully....");
-				} catch (AddressException e) {
-					// ...
-				} catch (MessagingException e) {
-					// ...
+				}
+				catch (MessagingException | UnsupportedEncodingException e) {
+					e.printStackTrace();
 				}
 			}
 		}

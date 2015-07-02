@@ -14,6 +14,11 @@ import javafx.stage.Stage;
 
 import java.util.Optional;
 
+/* Client Main
+ * JavaFX application
+ * Host IP, Login and Add User windows
+ * Calls Client View on successful login
+ */
 public class ClientMain extends Application {
     private ClientController controller;
     private Stage primaryStage;

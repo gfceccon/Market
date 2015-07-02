@@ -5,6 +5,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+/* User
+ * Represents a user
+ * Product is  serializable (42 by default all serializable classes), CSV serializable
+ */
 public class User implements Serializable, CSVSerializable
 {
 	static final long serialVersionUID = 42L;
@@ -23,6 +27,7 @@ public class User implements Serializable, CSVSerializable
 		return salt;
 	}
 
+	// Set salt and re-crypto password
     public void setSalt(String salt) {
         this.salt = salt;
 
@@ -53,6 +58,7 @@ public class User implements Serializable, CSVSerializable
 
     public User(){}
 
+	// Create user and randomize salt
 	public User(String name, String address, String phone, String email, String login, String password)
 	{
 		this.name = name;

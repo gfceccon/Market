@@ -1,7 +1,7 @@
 package br.usp.icmc.market;
 
-/**
- * Created by gustavo.ceccon on 30/06/2015.
+/* OutOfStock
+ * Out of stock exception
  */
 public class OutOfStock extends Throwable
 {
